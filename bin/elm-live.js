@@ -24,11 +24,13 @@ program
   // Proxy
   .option(
     '-x, --proxy-prefix [prefix]',
-    `Proxy requests for paths starting with the passed in prefix to another server. Requires ${chalk.cyan.underline('--proxyHost')} and should be a string like ${chalk.cyan.underline('/api')}.`
+    `Proxy requests for paths starting with the passed in prefix to another server. Requires ${chalk.cyan.underline('--proxyHost')} and should be a string like ${chalk.cyan.underline('/api')}.`,
+    appender(), []
   )
   .option(
     '-y, --proxy-host [proxyhost]',
-    `The location to proxy the requests captured under ${chalk.cyan.underline('--proxyPrefix')}. Requires ${chalk.cyan.underline('--proxyPrefix')} and should be a full URL, eg. http://localhost:9000.`
+    `The location to proxy the requests captured under ${chalk.cyan.underline('--proxyPrefix')}. Requires ${chalk.cyan.underline('--proxyPrefix')} and should be a full URL, eg. http://localhost:9000.`,
+    appender(), []
   )
 
   // File System
@@ -65,8 +67,7 @@ const errorReducer = isHot => ([past, flags], arg) => {
 const flagErrors = Object.entries(program.rawArgs.reduce(errorReducer(program.hot), [false, {
   wrongLocation: false,
   needsJs: false,
-  missingProxy: (program.proxyPrefix && !program.proxyHost) ||
-  (program.proxyHost && !program.proxyPrefix)
+  missingProxy: (program.proxyPrefix.length !== program.proxyHost.length)
 }]).pop()).reduce((acc, [key, value]) => value ? [...acc, flagErrorMsgs[key]] : acc, [])
 
 if (flagErrors.length > 0) {
@@ -78,4 +79,12 @@ if (flagErrors.length > 0) {
   }
   const elmLive = require('../lib')
   elmLive(program)
+}
+
+function appender (xs) {
+  xs = xs || []
+  return function (x) {
+    xs.push(x)
+    return xs
+  }
 }
